@@ -1,0 +1,364 @@
+---
+title: "Club de lectura Shiny: encuentro 1"
+author: "Jesica Formoso & María Nanton"
+format: 
+  revealjs:
+    theme: slides.scss
+    code-block-height: 600px
+editor: visual
+execute: 
+  echo: true
+  warning: false
+  eval: false
+---
+
+# Capítulos 1 y 2 
+
+- Your first Shiny app
+- Basic UI
+
+## Contenidos {.section}
+
+## Componentes de la aplicación
+
+::::: columns
+::: {.column width="40%"}
+**User interface**
+
+```{r}
+library(shiny)
+
+ui <- fluidPage(
+  "Hola, Mundo!"
+)
+```
+:::
+
+::: {.column width="60%"}
+**Server**
+
+```{r}
+server <- function(input, output, session) {
+}
+```
+:::
+:::::
+
+## Componentes de la aplicación
+
+**shinyApp()** construye e inicializa la aplicación: requiere **UI** y **server** como argumentos.
+
+```{r}
+shinyApp(ui, server)
+```
+
+## Primera app
+
+![](img/primera_app.PNG){fig-align="center"}
+
+## 
+
+```{r}
+library(shiny)
+library(datos)
+library(dplyr)
+library(ggplot2)
+
+ui <- fluidPage(
+  title = "Pingüinos Palmer" ,
+  selectInput(inputId = "especie", 
+              label = "Elegí la especie", 
+              choices = unique(pinguinos$especie)), 
+  verbatimTextOutput(outputId = "resumen"),
+  plotOutput(outputId = "grafico")
+)
+
+server <- function(input, output, session) {
+ 
+  dataset_filtrado <- reactive({
+    pinguinos |> 
+    filter(especie == input$especie)
+  })
+  
+  output$resumen <- renderPrint({
+    summary(dataset_filtrado())
+  })
+  
+  output$grafico <- renderPlot({
+    
+    dataset_filtrado() |> 
+      ggplot(aes(x = largo_pico_mm, 
+                 y = masa_corporal_g)) +
+      geom_point()
+    
+  })
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+## 
+
+```{r}
+library(shiny)
+library(datos)
+library(dplyr)
+library(ggplot2)
+```
+
+## 
+
+```{r}
+ui <- fluidPage(
+  title = "Pingüinos Palmer" ,
+  selectInput(inputId = "especie", 
+              label = "Elegí la especie", 
+              choices = unique(pinguinos$especie)), 
+  verbatimTextOutput(outputId = "resumen"),
+  plotOutput(outputId = "grafico")
+)
+```
+
+## 
+
+```{r}
+server <- function(input, output, session) {
+ 
+  dataset_filtrado <- reactive({
+    pinguinos |> 
+    filter(especie == input$especie)
+  })
+  
+  output$resumen <- renderPrint({
+    summary(dataset_filtrado())
+  })
+  
+  output$grafico <- renderPlot({
+    
+    dataset_filtrado() |> 
+      ggplot(aes(x = largo_pico_mm, 
+                 y = masa_corporal_g)) +
+      geom_point()
+    
+  })
+}
+```
+
+## 
+
+```{r}
+shinyApp(ui = ui, server = server)
+```
+
+## ¿Qué puede haber en ui()?
+
+-   Inputs
+-   Outputs
+-   Paratextos
+-   Imágenes
+-   Y más..
+
+## Inputs
+
+::::: columns
+::: {.column width="50%"}
+![](img/inputs1.PNG){fig-align="center"}
+:::
+
+::: {.column width="50%"}
+![](img/inputs2.PNG){fig-align="center"}
+:::
+:::::
+
+## Outputs
+
+![](img/outputs.PNG){fig-align="center"}
+
+## Ejercicios {.section}
+
+## Capítulo 1. Ejercicio 2
+
+Queremos diseñar una app que permita al usuario indicar un número entre 1 y 50 y que la app devuelva ese número multiplicado por 5. 
+
+**¿Cuál es el error?**
+
+
+##
+
+```{r}
+#| code-line-numbers: "|15"
+
+library(shiny)
+
+ui <- fluidPage(
+  sliderInput("x", 
+              label = "If x is", 
+              min = 1, 
+              max = 50, 
+              value = 30),
+  "then x times 5 is",
+  textOutput("product")
+)
+
+server <- function(input, output, session) {
+  output$product <- renderText({ 
+    x * 5
+  })
+}
+```
+
+## 
+
+```{r}
+#| code-line-numbers: "15"
+
+library(shiny)
+
+ui <- fluidPage(
+  sliderInput("x", 
+              label = "If x is", 
+              min = 1, 
+              max = 50, 
+              value = 30),
+  "then x times 5 is",
+  textOutput("product")
+)
+
+server <- function(input, output, session) {
+  output$product <- renderText({ 
+    input$x * 5
+  })
+}
+```
+
+## Capítulo 1. Ejercicio 5
+
+En la siguiente aplicación el usuario puede seleccionar un dataset y la aplicación muestra un resumen de los datos y un gráfico. 
+
+**¿Cuáles son los tres errores?**
+
+##
+
+```{r}
+#| code-line-numbers: "|4|10|21"
+
+library(shiny)
+library(ggplot2)
+
+datasets <- c("economics", "faithfuld", "seals")
+ui <- fluidPage(
+  selectInput("dataset", 
+              "Dataset", 
+              choices = datasets),
+  verbatimTextOutput("summary"),
+  tableOutput("plot")
+)
+
+server <- function(input, output, session) {
+  dataset <- reactive({
+    get(input$dataset, "package:ggplot2")
+  })
+  output$summary <- renderPrint({
+    summary(dataset())
+  })
+  output$plot <- renderPlot({
+    plot(dataset)
+  }, res = 96)
+}
+
+shinyApp(ui, server)
+```
+
+## 
+
+```{r}
+#| code-line-numbers: "4|10|21"
+library(shiny)
+library(ggplot2)
+
+datasets <- c("economics", "faithful", "seals")
+ui <- fluidPage(
+  selectInput("dataset", 
+              "Dataset", 
+              choices = datasets),
+  verbatimTextOutput("summary"),
+  plotOutput("plot")
+)
+
+server <- function(input, output, session) {
+  dataset <- reactive({
+    get(input$dataset, "package:ggplot2")
+  })
+  output$summary <- renderPrint({
+    summary(dataset())
+  })
+  output$plot <- renderPlot({
+    plot(dataset())
+  }, res = 96)
+}
+
+shinyApp(ui, server)
+```
+
+## Capítulo 2. Ejercicio 2.2.6.4
+
+Si tienes una lista moderadamente larga en un selectInput(), es útil crear subtítulos que dividan la lista en secciones. Lee la documentación para descubrir cómo hacerlo.
+
+## 
+
+```{r}
+
+mamiferos <- c("perro", "delfín", "liebre", "rata", "vaca")
+reptiles <- c("cocodrilo", "tortuga", "iguana")
+anfibios <- c("ranas", "salamandra", "tritón")
+
+ui <- fluidPage(
+  selectInput("animal", 
+              "Cual es tu animal preferido?", 
+              choices = list("mamiferos" = mamiferos, 
+                             "reptiles" = reptiles, 
+                             "anfibios" = anfibios)),
+)
+
+server <- function(input, output, session) {
+}
+  
+shinyApp(ui, server)
+```
+
+##
+
+![](img/app1.PNG){fig-align="center"}
+
+## 
+
+```{r}
+# Creamos el data frame
+df <- data.frame(animal = c("perro", "delfín", "liebre", 
+                            "rata", "vaca", "cocodrilo", 
+                            "tortuga", "iguana", "ranas", 
+                            "salamandra", "tritón"),
+                 categoria = c(rep("mamifero", 5),
+                               rep("reptil", 3),
+                               rep("anfibio", 3)))
+
+# Creamos la lista agrupada
+animales_agrupados <- split(df$animal, df$categoria)
+
+# En una aplicación Shiny, usarías el selectInput() así:
+ui <- fluidPage(
+  selectInput("animal", 
+              "Elige un animal:", 
+              choices = animales_agrupados)
+)
+
+server <- function(input, output, session) {
+}
+
+shinyApp(ui, server)
+```
+# Discusión
+
+¿Tenés dudas sobre la teoría?
+¿Resolviste de otra forma las actividades?
+¿Te trabaste en algún ejercicio?
